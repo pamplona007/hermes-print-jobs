@@ -1,0 +1,14 @@
+{
+  "name": "hermes-print-jobs-dashboard",
+  "version": "0.2.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "watch": "tsc --project tsconfig.json --watch"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "@types/react": "^19.1.6",
+    "react": "^19.1.0"
+  }
+}

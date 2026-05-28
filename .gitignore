@@ -1,5 +1,9 @@
-# Plugin built assets — keep in repo so it works out-of-the-box
-# (dashboard/dist/ is gitignored only in the source repo, not the installed plugin)
+# Compiled TypeScript output (committed so the plugin works out-of-the-box)
+# — edit dashboard/src/index.tsx and run `npm run build` to update
+dashboard/dist/index.js
+
+# Dependencies — run `npm install` in dashboard/ to restore
+dashboard/node_modules/
 
 *.pyc
 __pycache__/
