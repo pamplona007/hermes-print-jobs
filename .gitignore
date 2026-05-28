@@ -1,4 +1,6 @@
-dist/
+# Plugin built assets — keep in repo so it works out-of-the-box
+# (dashboard/dist/ is gitignored only in the source repo, not the installed plugin)
+
 *.pyc
 __pycache__/
 .env
