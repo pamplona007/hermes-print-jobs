@@ -1,0 +1,4 @@
+name: hermes-print-jobs
+kind: backend
+version: "0.1.0"
+description: Search public STL files, slice them for a Moonraker printer, and manage print jobs from the Hermes dashboard.

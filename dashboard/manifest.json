@@ -1,0 +1,14 @@
+{
+  "name": "print-jobs",
+  "label": "Print Jobs",
+  "description": "Search STL files, slice them, and manage Moonraker print jobs.",
+  "icon": "Printer",
+  "version": "0.1.0",
+  "tab": {
+    "path": "/print-jobs",
+    "position": "after:skills"
+  },
+  "slots": ["sessions:top"],
+  "entry": "dist/index.js",
+  "api": "plugin_api.py"
+}
