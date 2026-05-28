@@ -8,7 +8,7 @@
     "path": "/print-jobs",
     "position": "after:skills"
   },
-  "slots": ["sessions:top"],
+  "slots": [],
   "entry": "dist/index.js",
   "api": "plugin_api.py"
 }
