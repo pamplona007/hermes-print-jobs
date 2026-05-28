@@ -1142,7 +1142,14 @@ var HermesPrintJobs = (() => {
             { key: i, className: "p-3" },
             import_react.default.createElement(
               "div",
-              { className: "flex justify-between items-start gap-2" },
+              { className: "flex gap-3 items-start" },
+              r.thumbnail_url ? import_react.default.createElement("img", {
+                src: r.thumbnail_url,
+                alt: r.title,
+                className: "w-16 h-16 object-cover rounded flex-shrink-0 border"
+              }) : import_react.default.createElement("div", {
+                className: "w-16 h-16 bg-muted rounded flex-shrink-0 flex items-center justify-center text-xs text-muted-foreground"
+              }, "no img"),
               import_react.default.createElement(
                 "div",
                 { className: "flex-1 min-w-0" },

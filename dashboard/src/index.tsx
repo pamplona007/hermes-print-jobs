@@ -137,6 +137,7 @@ interface SearchResult {
   url: string;
   stl_url?: string;
   description?: string;
+  thumbnail_url?: string;
 }
 
 interface SearchResponse {
@@ -255,7 +256,16 @@ function SearchTab({ onSwitchTab }: SearchTabProps) {
     results.length > 0 && React.createElement("div", { className: "grid gap-3" },
       results.map((r, i) =>
         React.createElement(Card, { key: i, className: "p-3" },
-          React.createElement("div", { className: "flex justify-between items-start gap-2" },
+          React.createElement("div", { className: "flex gap-3 items-start" },
+            r.thumbnail_url
+              ? React.createElement("img", {
+                  src: r.thumbnail_url,
+                  alt: r.title,
+                  className: "w-16 h-16 object-cover rounded flex-shrink-0 border",
+                })
+              : React.createElement("div", {
+                  className: "w-16 h-16 bg-muted rounded flex-shrink-0 flex items-center justify-center text-xs text-muted-foreground",
+                }, "no img"),
             React.createElement("div", { className: "flex-1 min-w-0" },
               React.createElement(CardTitle, { className: "text-sm truncate" }, r.title),
               React.createElement("p", { className: "text-xs text-muted-foreground mt-0.5" },

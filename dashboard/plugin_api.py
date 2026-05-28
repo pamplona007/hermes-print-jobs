@@ -111,9 +111,10 @@ def _get_printer_status() -> dict:
 class SearchResult(BaseModel):
     title: str
     source: str          # "printables" | "thingiverse" | "makerworld"
-    url: str             # direct STL or model page URL
+    url: str             # model page URL
     stl_url: Optional[str] = None   # direct STL download URL (resolved)
     description: Optional[str] = None
+    thumbnail_url: Optional[str] = None   # preview image URL
 
 class SearchResponse(BaseModel):
     query: str
@@ -174,30 +175,90 @@ class ConfirmBedClearRequest(BaseModel):
 # ---------------------------------------------------------------------------
 
 def _search_printables(query: str) -> list[SearchResult]:
-    """Search Printables.com for models matching query."""
+    """Search Printables.com via GraphQL API.
+
+    The REST API (api.printables.com/v1/model/search) is Cloudflare-protected
+    and returns 403. The GraphQL endpoint at api.printables.com/graphql/
+    works with a normal User-Agent.
+    """
     try:
+        gql_query = """
+        query SearchModels($query: String!, $limit: Int, $ordering: SearchChoicesEnum) {
+          result: searchPrints2(
+            query: $query
+            printType: print
+            limit: $limit
+            ordering: $ordering
+          ) {
+            items {
+              id
+              name
+              slug
+              ratingAvg
+              likesCount
+              downloadCount
+              datePublished
+              image { filePath }
+              user { handle }
+            }
+          }
+        }
+        """
+        payload = {
+            "operationName": "SearchModels",
+            "query": gql_query.strip(),
+            "variables": {
+                "query": query,
+                "limit": 10,
+                "ordering": "best_match",
+            },
+        }
         headers = {
-            "User-Agent": "Mozilla/5.0 (compatible; hermes-print-jobs/1.0)",
+            "User-Agent": (
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/120.0.0.0 Safari/537.36"
+            ),
+            "Content-Type": "application/json",
             "Accept": "application/json",
         }
-        resp = requests.get(
-            "https://api.printables.com/v1/model/search",
-            params={"query": query, "limit": 10, "sort": "relevance"},
+        resp = requests.post(
+            "https://api.printables.com/graphql/",
+            json=payload,
             headers=headers,
-            timeout=15,
+            timeout=20,
         )
         resp.raise_for_status()
         data = resp.json()
-        return [
-            SearchResult(
+        items = (
+            data.get("data", {})
+            .get("result", {})
+            .get("items", [])
+        )
+        results = []
+        for item in items:
+            img_path = (item.get("image") or {}).get("filePath", "")
+            img_url = (
+                f"https://media.printables.com/{img_path}"
+                if img_path
+                else ""
+            )
+            model_id = str(item.get("id", ""))
+            results.append(SearchResult(
                 title=item.get("name", "Untitled"),
                 source="printables",
-                url=f"https://www.printables.com/model/{item['id']}",
-                stl_url=f"https://api.printables.com/v1/model/{item['id']}/files/stl/download",
-                description=item.get("description", "")[:200],
-            )
-            for item in data.get("results", []) if item.get("id")
-        ]
+                # Page URL — user visits this to see the model
+                url=f"https://www.printables.com/model/{model_id}",
+                # STL direct download URL (may require login for some models)
+                stl_url=f"https://www.printables.com/model/{model_id}/download-file/{model_id}/stl",
+                description=(
+                    f"⭐ {item.get('ratingAvg', 0):.1f} "
+                    f"❤️ {item.get('likesCount', 0)} "
+                    f"⬇ {item.get('downloadCount', 0)}"
+                ),
+                thumbnail_url=img_url,
+            ))
+        return results
     except Exception as exc:
         log.warning("Printables search failed: %s", exc)
         return []
